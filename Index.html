@@ -1,0 +1,869 @@
+```html
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookLog — Literary Review & Journal</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                            950: '#451a03',
+                        },
+                        warmGray: {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                            950: '#0c0a09',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Line Clamp for Multi-line Truncation */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Smooth Glassmorphism Header */
+        .glass-header {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-warmGray-50 text-warmGray-900 dark:bg-warmGray-950 dark:text-warmGray-100 min-h-full font-sans transition-colors duration-300 flex flex-col">
+
+    <!-- APP HEADER -->
+    <header class="sticky top-0 z-30 border-b border-warmGray-200 dark:border-warmGray-800 bg-warmGray-50/80 dark:bg-warmGray-950/80 glass-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilters()">
+                <div class="w-10 h-10 rounded-xl bg-amber-600 dark:bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-600/20">
+                    <i data-lucide="book-open" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif font-bold text-xl tracking-tight text-warmGray-900 dark:text-warmGray-50">BookLog</h1>
+                    <p class="text-xs text-warmGray-500 dark:text-warmGray-400 font-medium hidden sm:block">Personal Reading Journal</p>
+                </div>
+            </div>
+
+            <!-- Actions Right -->
+            <div class="flex items-center space-x-3">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-xl border border-warmGray-200 dark:border-warmGray-800 text-warmGray-600 dark:text-warmGray-400 hover:bg-warmGray-200/50 dark:hover:bg-warmGray-800/50 transition-colors" title="Beralih Tema">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+
+                <!-- Primary Action Button -->
+                <button onclick="openFormModal()" class="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-all transform active:scale-95 text-sm sm:text-base">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="hidden sm:inline">Tambah Review</span>
+                    <span class="sm:hidden">Tambah</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- HERO & DASHBOARD STATS -->
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Hero Card -->
+            <div class="md:col-span-4 bg-gradient-to-r from-warmGray-900 via-warmGray-800 to-warmGray-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div class="relative z-10 max-w-2xl space-y-2">
+                    <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        <span>Jurnal Literasi Pribadi</span>
+                    </span>
+                    <h2 class="font-serif text-2xl sm:text-3xl font-bold text-warmGray-100 leading-tight">
+                        Dokumentasikan Pikiran & Pemahaman dari Setiap Bacaan
+                    </h2>
+                    <p class="text-warmGray-300 text-sm sm:text-base">
+                        Simpan kutipan penting, berikan ulasan mendalam, dan pantau perkembangan membaca Anda secara berkala.
+                    </p>
+                </div>
+                <!-- Accent Graphic -->
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i data-lucide="library" class="w-64 h-64 text-white"></i>
+                </div>
+            </div>
+
+            <!-- Stat Card 1 -->
+            <div class="bg-white dark:bg-warmGray-900 border border-warmGray-200 dark:border-warmGray-800 rounded-2xl p-5 shadow-sm flex items-center space-x-4">
+                <div class="p-3.5 bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 rounded-xl">
+                    <i data-lucide="book-open-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-warmGray-500 dark:text-warmGray-400">Total Buku Dibaca</p>
+                    <h3 id="statTotalBooks" class="text-2xl font-bold font-serif text-warmGray-900 dark:text-warmGray-100">0</h3>
+                </div>
+            </div>
+
+            <!-- Stat Card 2 -->
+            <div class="bg-white dark:bg-warmGray-900 border border-warmGray-200 dark:border-warmGray-800 rounded-2xl p-5 shadow-sm flex items-center space-x-4">
+                <div class="p-3.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 rounded-xl">
+                    <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-warmGray-500 dark:text-warmGray-400">Status Selesai</p>
+                    <h3 id="statCompletedBooks" class="text-2xl font-bold font-serif text-warmGray-900 dark:text-warmGray-100">0</h3>
+                </div>
+            </div>
+
+            <!-- Stat Card 3 -->
+            <div class="bg-white dark:bg-warmGray-900 border border-warmGray-200 dark:border-warmGray-800 rounded-2xl p-5 shadow-sm flex items-center space-x-4">
+                <div class="p-3.5 bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 rounded-xl">
+                    <i data-lucide="bookmark-plus" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-warmGray-500 dark:text-warmGray-400">Daftar Wajib Baca</p>
+                    <h3 id="statWishlistBooks" class="text-2xl font-bold font-serif text-warmGray-900 dark:text-warmGray-100">0</h3>
+                </div>
+            </div>
+
+            <!-- Stat Card 4 -->
+            <div class="bg-white dark:bg-warmGray-900 border border-warmGray-200 dark:border-warmGray-800 rounded-2xl p-5 shadow-sm flex items-center space-x-4">
+                <div class="p-3.5 bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl">
+                    <i data-lucide="star" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-warmGray-500 dark:text-warmGray-400">Rata-rata Rating</p>
+                    <h3 id="statAvgRating" class="text-2xl font-bold font-serif text-warmGray-900 dark:text-warmGray-100">0.0</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTERS & CONTROLS -->
+        <section class="bg-white dark:bg-warmGray-900 border border-warmGray-200 dark:border-warmGray-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+            <div class="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center">
+                
+                <!-- Search Box -->
+                <div class="relative flex-grow max-w-lg">
+                    <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-warmGray-400"></i>
+                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Cari judul buku, penulis, atau kutipan..." 
+                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-warmGray-200 dark:border-warmGray-700 bg-warmGray-50 dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                </div>
+
+                <!-- Dropdown Filters Group -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    
+                    <!-- Genre Filter -->
+                    <select id="genreFilter" onchange="renderApp()" class="px-3 py-2.5 rounded-xl border border-warmGray-200 dark:border-warmGray-700 bg-warmGray-50 dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="ALL">Semua Genre</option>
+                        <option value="Filsafat">Filsafat</option>
+                        <option value="Sejarah">Sejarah</option>
+                        <option value="Sains Populer">Sains Populer</option>
+                        <option value="Ekonomi Politik">Ekonomi Politik</option>
+                        <option value="Fiksi & Novel">Fiksi & Novel</option>
+                        <option value="Pengembangan Diri">Pengembangan Diri</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+
+                    <!-- Status Filter -->
+                    <select id="statusFilter" onchange="renderApp()" class="px-3 py-2.5 rounded-xl border border-warmGray-200 dark:border-warmGray-700 bg-warmGray-50 dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="ALL">Semua Status</option>
+                        <option value="Selesai">Selesai Dibaca</option>
+                        <option value="Sedang Dibaca">Sedang Dibaca</option>
+                        <option value="Wajib Baca">Wajib Baca</option>
+                    </select>
+
+                    <!-- Sort By Filter -->
+                    <select id="sortFilter" onchange="renderApp()" class="col-span-2 sm:col-span-1 px-3 py-2.5 rounded-xl border border-warmGray-200 dark:border-warmGray-700 bg-warmGray-50 dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="NEWEST">Terbaru Ditambahkan</option>
+                        <option value="RATING_DESC">Rating Tertinggi</option>
+                        <option value="RATING_ASC">Rating Terendah</option>
+                        <option value="TITLE_ASC">Judul (A-Z)</option>
+                    </select>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- BOOK CARDS GRID SECTION -->
+        <section>
+            <div id="booksGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Book Cards will be rendered dynamically via JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-16 px-4 bg-white dark:bg-warmGray-900 rounded-2xl border border-dashed border-warmGray-300 dark:border-warmGray-800">
+                <div class="w-16 h-16 bg-warmGray-100 dark:bg-warmGray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-warmGray-400">
+                    <i data-lucide="book-x" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-serif font-bold text-lg text-warmGray-800 dark:text-warmGray-200">Tidak ada review ditemukan</h3>
+                <p class="text-sm text-warmGray-500 dark:text-warmGray-400 max-w-sm mx-auto mt-1 mb-6">
+                    Coba sesuaikan kata kunci pencarian atau buat review buku baru kamu sekarang.
+                </p>
+                <button onclick="openFormModal()" class="inline-flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Tambah Review Pertama</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto border-t border-warmGray-200 dark:border-warmGray-800 bg-white dark:bg-warmGray-900 py-6 text-center text-xs text-warmGray-500 dark:text-warmGray-400">
+        <p>© <span id="currentYear"></span> <strong>BookLog App</strong> — Catatan & Review Jurnal Literasi Digital.</p>
+    </footer>
+
+    <!-- ================= MODALS SECTION ================= -->
+
+    <!-- 1. FORM MODAL (CREATE / EDIT) -->
+    <div id="formModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white dark:bg-warmGray-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-warmGray-200 dark:border-warmGray-800 overflow-hidden transform transition-all my-8">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-warmGray-200 dark:border-warmGray-800 flex justify-between items-center bg-warmGray-50 dark:bg-warmGray-950/50">
+                <h3 id="formModalTitle" class="font-serif font-bold text-lg text-warmGray-900 dark:text-warmGray-100">
+                    Tambah Review Buku
+                </h3>
+                <button onclick="closeFormModal()" class="text-warmGray-400 hover:text-warmGray-600 dark:hover:text-warmGray-200 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="bookForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <input type="hidden" id="bookId">
+
+                <!-- Judul & Penulis Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-warmGray-700 dark:text-warmGray-300 mb-1">Judul Buku *</label>
+                        <input type="text" id="bookTitle" required placeholder="Contoh: Filosofi Teras" 
+                            class="w-full px-3 py-2 rounded-xl border border-warmGray-300 dark:border-warmGray-700 bg-white dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-warmGray-700 dark:text-warmGray-300 mb-1">Penulis / Pengarang *</label>
+                        <input type="text" id="bookAuthor" required placeholder="Contoh: Henry Manampiring" 
+                            class="w-full px-3 py-2 rounded-xl border border-warmGray-300 dark:border-warmGray-700 bg-white dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                </div>
+
+                <!-- Genre, Status & Rating Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-warmGray-700 dark:text-warmGray-300 mb-1">Kategori / Genre *</label>
+                        <select id="bookGenre" required class="w-full px-3 py-2 rounded-xl border border-warmGray-300 dark:border-warmGray-700 bg-white dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <option value="Filsafat">Filsafat</option>
+                            <option value="Sejarah">Sejarah</option>
+                            <option value="Sains Populer">Sains Populer</option>
+                            <option value="Ekonomi Politik">Ekonomi Politik</option>
+                            <option value="Fiksi & Novel">Fiksi & Novel</option>
+                            <option value="Pengembangan Diri">Pengembangan Diri</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-warmGray-700 dark:text-warmGray-300 mb-1">Status Baca *</label>
+                        <select id="bookStatus" required class="w-full px-3 py-2 rounded-xl border border-warmGray-300 dark:border-warmGray-700 bg-white dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <option value="Selesai">Selesai Dibaca</option>
+                            <option value="Sedang Dibaca">Sedang Dibaca</option>
+                            <option value="Wajib Baca">Wajib Baca</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-warmGray-700 dark:text-warmGray-300 mb-1">Rating</label>
+                        <div class="flex items-center space-x-1 py-1.5" id="ratingStarsContainer">
+                            <!-- Rating stars dynamically created -->
+                        </div>
+                        <input type="hidden" id="bookRating" value="5">
+                    </div>
+                </div>
+
+                <!-- URL Sampul Gambar -->
+                <div>
+                    <label class="block text-xs font-semibold text-warmGray-700 dark:text-warmGray-300 mb-1">URL Gambar Sampul (Opsional)</label>
+                    <input type="url" id="bookCoverUrl" placeholder="https://example.com/cover.jpg" 
+                        class="w-full px-3 py-2 rounded-xl border border-warmGray-300 dark:border-warmGray-700 bg-white dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <p class="text-[11px] text-warmGray-400 mt-1">Kosongkan jika ingin menggunakan sampul placeholder visual otomatis.</p>
+                </div>
+
+                <!-- Kutipan Favorit -->
+                <div>
+                    <label class="block text-xs font-semibold text-warmGray-700 dark:text-warmGray-300 mb-1">Kutipan Favorit (Quote)</label>
+                    <input type="text" id="bookQuote" placeholder="Kutipan memikat dari isi buku..." 
+                        class="w-full px-3 py-2 rounded-xl border border-warmGray-300 dark:border-warmGray-700 bg-white dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+
+                <!-- Text Ulasan Lengkap -->
+                <div>
+                    <label class="block text-xs font-semibold text-warmGray-700 dark:text-warmGray-300 mb-1">Ulasan / Catatan Refleksi *</label>
+                    <textarea id="bookReview" rows="4" required placeholder="Tuliskan ulasan mendalam, ringkasan gagasan utama, atau kesan kamu terhadap buku ini..." 
+                        class="w-full px-3 py-2 rounded-xl border border-warmGray-300 dark:border-warmGray-700 bg-white dark:bg-warmGray-800 text-warmGray-900 dark:text-warmGray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="pt-4 flex justify-end space-x-3 border-t border-warmGray-200 dark:border-warmGray-800">
+                    <button type="button" onclick="closeFormModal()" class="px-4 py-2 rounded-xl text-sm font-medium text-warmGray-600 dark:text-warmGray-400 hover:bg-warmGray-100 dark:hover:bg-warmGray-800 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-sm font-medium bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-colors">
+                        Simpan Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. DETAIL MODAL (VIEW FULL REVIEW) -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white dark:bg-warmGray-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-warmGray-200 dark:border-warmGray-800 overflow-hidden transform transition-all my-8">
+            
+            <!-- Modal Body -->
+            <div id="detailModalContent" class="max-h-[85vh] overflow-y-auto p-6 sm:p-8 space-y-6">
+                <!-- Injected via JavaScript -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-warmGray-50 dark:bg-warmGray-950/50 border-t border-warmGray-200 dark:border-warmGray-800 flex justify-end">
+                <button onclick="closeDetailModal()" class="px-5 py-2 bg-warmGray-200 dark:bg-warmGray-800 hover:bg-warmGray-300 dark:hover:bg-warmGray-700 text-warmGray-800 dark:text-warmGray-200 rounded-xl text-sm font-medium transition-colors">
+                    Tutup Bacaan
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= JAVASCRIPT CODE ================= -->
+    <script>
+        // --- DATA STATE & CONSTANTS ---
+        const STORAGE_KEY = 'BOOKLOG_REVIEWS_DATA_V1';
+        let reviews = [];
+        let currentRatingValue = 5;
+
+        // Sample Data for First-Time Users
+        const initialSampleData = [
+            {
+                id: 'sample-1',
+                title: 'Sapiens: Riwayat Singkat Umat Manusia',
+                author: 'Yuval Noah Harari',
+                genre: 'Sains Populer',
+                status: 'Selesai',
+                rating: 5,
+                coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+                quote: 'Kita menguasai dunia karena kita adalah satu-satunya hewan yang mampu percaya pada hal-hal yang hanya ada dalam imajinasi kita.',
+                review: 'Buku ini membuka wawasan secara luar biasa tentang bagaimana Homo sapiens berevolusi dari spesies yang biasa saja di Afrika menjadi penguasa planet Bumi. Harari menjelaskan tiga revolusi penting: Kognitif, Pertanian, dan Sains dengan gaya bahasa yang sangat renyah namun sarat data.',
+                createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+            },
+            {
+                id: 'sample-2',
+                title: 'Filosofi Teras',
+                author: 'Henry Manampiring',
+                genre: 'Filsafat',
+                status: 'Selesai',
+                rating: 5,
+                coverUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
+                quote: 'Kamu tidak bisa mengendalikan peristiwa di luar dirimu, tapi kamu selalu bisa mengendalikan responmu terhadapnya.',
+                review: 'Penerapan filsafat Stoisisme kuno dalam konteks kehidupan modern Indonesia yang sangat relevan. Cocok untuk siapa saja yang sering merasa cemas (*overthinking*) terhadap persepsi publik atau dinamika kehidupan sehari-hari.',
+                createdAt: new Date(Date.now() - 86400000 * 3).toISOString()
+            },
+            {
+                id: 'sample-3',
+                title: 'Dunia Sophie (Sophie\'s World)',
+                author: 'Jostein Gaarder',
+                genre: 'Fiksi & Novel',
+                status: 'Sedang Dibaca',
+                rating: 4,
+                coverUrl: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=600&q=80',
+                quote: 'Satu-satunya hal yang kita butuhkan untuk menjadi filsuf yang baik adalah rasa ingin tahu.',
+                review: 'Sebuah novel fiksi sejarah filsafat yang unik. Mengikuti kisah anak perempuan bernama Sophie yang menerima surat-surat misterius berisi kursus filsafat dari zaman Yunani Kuno hingga abad ke-20.',
+                createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+            },
+            {
+                id: 'sample-4',
+                title: 'Capital in the Twenty-First Century',
+                author: 'Thomas Piketty',
+                genre: 'Ekonomi Politik',
+                status: 'Wajib Baca',
+                rating: 5,
+                coverUrl: '',
+                quote: 'Ketimpangan kekayaan adalah hasil dari akumulasi modal yang bertumbuh lebih cepat daripada pertumbuhan ekonomi.',
+                review: 'Analisis mendalam mengenai sejarah akumulasi ketimpangan pendapatan dan modal di Barat sejak abad ke-18. Sangat kaya akan studi empiris.',
+                createdAt: new Date(Date.now() - 86400000 * 1).toISOString()
+            }
+        ];
+
+        // --- INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            loadReviewsFromStorage();
+            setupInteractiveRating();
+            initTheme();
+            renderApp();
+            lucide.createIcons();
+        });
+
+        // --- THEME MANAGEMENT ---
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // --- STORAGE HANDLERS ---
+        function loadReviewsFromStorage() {
+            const storedData = localStorage.getItem(STORAGE_KEY);
+            if (storedData) {
+                try {
+                    reviews = JSON.parse(storedData);
+                } catch (e) {
+                    console.error("Gagal membaca LocalStorage:", e);
+                    reviews = initialSampleData;
+                }
+            } else {
+                reviews = initialSampleData;
+                saveReviewsToStorage();
+            }
+        }
+
+        function saveReviewsToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
+        }
+
+        // --- INTERACTIVE RATING STARS IN FORM ---
+        function setupInteractiveRating() {
+            setRatingValue(5);
+        }
+
+        function setRatingValue(rating) {
+            currentRatingValue = rating;
+            document.getElementById('bookRating').value = rating;
+            const container = document.getElementById('ratingStarsContainer');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= 5; i++) {
+                const starBtn = document.createElement('button');
+                starBtn.type = 'button';
+                starBtn.className = `p-1 focus:outline-none transition-transform hover:scale-125 ${i <= rating ? 'text-amber-500' : 'text-warmGray-300 dark:text-warmGray-700'}`;
+                starBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${i <= rating ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+                starBtn.onclick = () => setRatingValue(i);
+                container.appendChild(starBtn);
+            }
+        }
+
+        // --- RENDER MAIN APPLICATION ---
+        function renderApp() {
+            updateDashboardStats();
+            renderBookCards();
+            lucide.createIcons();
+        }
+
+        // Dashboard Stats Calculator
+        function updateDashboardStats() {
+            const total = reviews.length;
+            const completed = reviews.filter(r => r.status === 'Selesai').length;
+            const wishlist = reviews.filter(r => r.status === 'Wajib Baca').length;
+            
+            const totalRatingSum = reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0);
+            const avgRating = total > 0 ? (totalRatingSum / total).toFixed(1) : '0.0';
+
+            document.getElementById('statTotalBooks').textContent = total;
+            document.getElementById('statCompletedBooks').textContent = completed;
+            document.getElementById('statWishlistBooks').textContent = wishlist;
+            document.getElementById('statAvgRating').textContent = avgRating;
+        }
+
+        // Helper to Generate Stars HTML
+        function generateStarsHtml(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                const filled = i <= rating;
+                stars += `<i data-lucide="star" class="w-4 h-4 ${filled ? 'text-amber-500 fill-amber-500' : 'text-warmGray-300 dark:text-warmGray-700'}"></i>`;
+            }
+            return `<div class="flex items-center space-x-0.5">${stars}</div>`;
+        }
+
+        // Status Badge Styling Helper
+        function getStatusBadgeHtml(status) {
+            let badgeClass = 'bg-warmGray-100 text-warmGray-700 dark:bg-warmGray-800 dark:text-warmGray-300';
+            if (status === 'Selesai') {
+                badgeClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
+            } else if (status === 'Sedang Dibaca') {
+                badgeClass = 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800';
+            } else if (status === 'Wajib Baca') {
+                badgeClass = 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800';
+            }
+            return `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeClass}">${status}</span>`;
+        }
+
+        // Render Books Grid Card
+        function renderBookCards() {
+            const grid = document.getElementById('booksGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const genreFilter = document.getElementById('genreFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+
+            // Filter Logic
+            let filtered = reviews.filter(book => {
+                const matchesSearch = book.title.toLowerCase().includes(searchQuery) || 
+                                      book.author.toLowerCase().includes(searchQuery) ||
+                                      (book.quote && book.quote.toLowerCase().includes(searchQuery));
+                
+                const matchesGenre = genreFilter === 'ALL' || book.genre === genreFilter;
+                const matchesStatus = statusFilter === 'ALL' || book.status === statusFilter;
+
+                return matchesSearch && matchesGenre && matchesStatus;
+            });
+
+            // Sorting Logic
+            filtered.sort((a, b) => {
+                if (sortFilter === 'RATING_DESC') return b.rating - a.rating;
+                if (sortFilter === 'RATING_ASC') return a.rating - b.rating;
+                if (sortFilter === 'TITLE_ASC') return a.title.localeCompare(b.title);
+                // Default NEWEST
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                grid.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            filtered.forEach(book => {
+                const card = document.createElement('article');
+                card.className = 'bg-white dark:bg-warmGray-900 border border-warmGray-200 dark:border-warmGray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group';
+
+                // Placeholder image fallback
+                const coverImage = book.coverUrl && book.coverUrl.trim() !== '' 
+                    ? book.coverUrl 
+                    : `https://placehold.co/400x600/78350f/ffffff?text=${encodeURIComponent(book.title)}`;
+
+                card.innerHTML = `
+                    <div>
+                        <!-- Image Cover Header -->
+                        <div class="relative h-48 bg-warmGray-100 dark:bg-warmGray-800 overflow-hidden">
+                            <img src="${coverImage}" alt="${book.title}" 
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                onerror="this.onerror=null; this.src='https://placehold.co/400x600/292524/ffffff?text=Book+Cover';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                            
+                            <!-- Badges floating on image -->
+                            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                                ${getStatusBadgeHtml(book.status)}
+                            </div>
+
+                            <div class="absolute bottom-3 left-3 right-3 text-white">
+                                <span class="text-[11px] uppercase tracking-wider font-semibold text-amber-400 block">${book.genre}</span>
+                                <h3 class="font-serif font-bold text-lg leading-snug line-clamp-1">${book.title}</h3>
+                            </div>
+                        </div>
+
+                        <!-- Card Content Body -->
+                        <div class="p-5 space-y-3">
+                            <div class="flex items-center justify-between text-xs text-warmGray-500 dark:text-warmGray-400">
+                                <span>Oleh <strong>${book.author}</strong></span>
+                                ${generateStarsHtml(book.rating)}
+                            </div>
+
+                            ${book.quote ? `
+                                <blockquote class="border-l-2 border-amber-500 pl-3 py-0.5 italic text-xs text-warmGray-600 dark:text-warmGray-300 font-serif line-clamp-2">
+                                    "${book.quote}"
+                                </blockquote>
+                            ` : ''}
+
+                            <p class="text-xs sm:text-sm text-warmGray-600 dark:text-warmGray-400 line-clamp-3 leading-relaxed">
+                                ${book.review}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer Actions -->
+                    <div class="px-5 py-3 border-t border-warmGray-100 dark:border-warmGray-800 bg-warmGray-50/50 dark:bg-warmGray-950/30 flex items-center justify-between">
+                        <button onclick="openDetailModal('${book.id}')" class="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 flex items-center space-x-1">
+                            <span>Baca Ulasan</span>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                        </button>
+
+                        <div class="flex items-center space-x-1">
+                            <button onclick="openFormModal('${book.id}')" class="p-1.5 text-warmGray-400 hover:text-amber-600 dark:hover:text-amber-400 rounded-lg transition-colors" title="Edit">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteReview('${book.id}')" class="p-1.5 text-warmGray-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors" title="Hapus">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('genreFilter').value = 'ALL';
+            document.getElementById('statusFilter').value = 'ALL';
+            document.getElementById('sortFilter').value = 'NEWEST';
+            renderApp();
+        }
+
+        // --- FORM MODAL HANDLERS ---
+        function openFormModal(id = null) {
+            const modal = document.getElementById('formModal');
+            const titleEl = document.getElementById('formModalTitle');
+            const form = document.getElementById('bookForm');
+
+            form.reset();
+            
+            if (id) {
+                const existing = reviews.find(r => r.id === id);
+                if (existing) {
+                    titleEl.textContent = 'Edit Review Buku';
+                    document.getElementById('bookId').value = existing.id;
+                    document.getElementById('bookTitle').value = existing.title;
+                    document.getElementById('bookAuthor').value = existing.author;
+                    document.getElementById('bookGenre').value = existing.genre;
+                    document.getElementById('bookStatus').value = existing.status;
+                    document.getElementById('bookCoverUrl').value = existing.coverUrl || '';
+                    document.getElementById('bookQuote').value = existing.quote || '';
+                    document.getElementById('bookReview').value = existing.review;
+                    setRatingValue(existing.rating || 5);
+                }
+            } else {
+                titleEl.textContent = 'Tambah Review Buku Baru';
+                document.getElementById('bookId').value = '';
+                setRatingValue(5);
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeFormModal() {
+            document.getElementById('formModal').classList.add('hidden');
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('bookId').value;
+            const title = document.getElementById('bookTitle').value.trim();
+            const author = document.getElementById('bookAuthor').value.trim();
+            const genre = document.getElementById('bookGenre').value;
+            const status = document.getElementById('bookStatus').value;
+            const coverUrl = document.getElementById('bookCoverUrl').value.trim();
+            const quote = document.getElementById('bookQuote').value.trim();
+            const review = document.getElementById('bookReview').value.trim();
+            const rating = parseInt(document.getElementById('bookRating').value);
+
+            if (id) {
+                // Update
+                const index = reviews.findIndex(r => r.id === id);
+                if (index !== -1) {
+                    reviews[index] = {
+                        ...reviews[index],
+                        title, author, genre, status, coverUrl, quote, review, rating
+                    };
+                }
+            } else {
+                // Create New
+                const newBook = {
+                    id: 'book-' + Date.now(),
+                    title,
+                    author,
+                    genre,
+                    status,
+                    coverUrl,
+                    quote,
+                    review,
+                    rating,
+                    createdAt: new Date().toISOString()
+                };
+                reviews.unshift(newBook);
+            }
+
+            saveReviewsToStorage();
+            closeFormModal();
+            renderApp();
+        }
+
+        // --- DELETE REVIEW HANDLER ---
+        function deleteReview(id) {
+            const book = reviews.find(r => r.id === id);
+            if (!book) return;
+
+            // Simple standard browser confirmation (custom interface styled cleanly)
+            const confirmDelete = window.confirm(`Apakah kamu yakin ingin menghapus review buku "${book.title}"?`);
+            if (confirmDelete) {
+                reviews = reviews.filter(r => r.id !== id);
+                saveReviewsToStorage();
+                renderApp();
+            }
+        }
+
+        // --- DETAIL MODAL HANDLERS ---
+        function openDetailModal(id) {
+            const book = reviews.find(r => r.id === id);
+            if (!book) return;
+
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('detailModalContent');
+
+            const coverImage = book.coverUrl && book.coverUrl.trim() !== '' 
+                ? book.coverUrl 
+                : `https://placehold.co/400x600/78350f/ffffff?text=${encodeURIComponent(book.title)}`;
+
+            const formattedDate = new Date(book.createdAt).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                    <!-- Left: Cover Image -->
+                    <div class="md:col-span-1">
+                        <img src="${coverImage}" alt="${book.title}" 
+                            class="w-full h-auto rounded-xl shadow-lg border border-warmGray-200 dark:border-warmGray-800 object-cover"
+                            onerror="this.onerror=null; this.src='https://placehold.co/400x600/292524/ffffff?text=Book+Cover';">
+                    </div>
+
+                    <!-- Right: Info & Full Review Text -->
+                    <div class="md:col-span-2 space-y-4">
+                        <div>
+                            <div class="flex items-center space-x-2 mb-2">
+                                ${getStatusBadgeHtml(book.status)}
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                                    ${book.genre}
+                                </span>
+                            </div>
+                            <h2 class="font-serif font-bold text-2xl text-warmGray-900 dark:text-warmGray-50">${book.title}</h2>
+                            <p class="text-sm text-warmGray-600 dark:text-warmGray-400 mt-1">Penulis: <strong>${book.author}</strong></p>
+                        </div>
+
+                        <div class="flex items-center justify-between py-2 border-y border-warmGray-200 dark:border-warmGray-800">
+                            <div>
+                                <span class="text-xs text-warmGray-400 block mb-0.5">Penilaian:</span>
+                                ${generateStarsHtml(book.rating)}
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-warmGray-400 block mb-0.5">Tanggal Dicatat:</span>
+                                <span class="text-xs font-medium text-warmGray-600 dark:text-warmGray-300">${formattedDate}</span>
+                            </div>
+                        </div>
+
+                        ${book.quote ? `
+                            <div class="bg-amber-50 dark:bg-amber-950/30 border-l-4 border-amber-500 p-4 rounded-r-xl">
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block mb-1">Kutipan Pilihan</span>
+                                <p class="font-serif italic text-warmGray-800 dark:text-warmGray-200 text-sm">
+                                    "${book.quote}"
+                                </p>
+                            </div>
+                        ` : ''}
+
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-warmGray-400 mb-2">Ulasan Lengkap</h4>
+                            <div class="text-sm leading-relaxed text-warmGray-700 dark:text-warmGray-300 space-y-3 font-serif">
+                                ${book.review.split('\n').map(p => `<p>${p}</p>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
+```
